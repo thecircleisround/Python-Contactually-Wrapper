@@ -570,13 +570,14 @@ class Contactually:
         '''
 
         payload = self._payload_fact(locals().items(), exclude=['participants'])
-        print(participants)
 
         if participants:
             payload['data']['participants'] = [{'contact_id':contact_id, 'handle':handle} for contact_id, handle in participants.items()]
 
-        print(payload)
+        dest = '/interactions'
+        method = 'POST'
 
+        return Request(self.token, method, dest, payload=payload)
 
 
 
@@ -586,5 +587,3 @@ class Contactually:
 if __name__ == '__main__':
     from pprint import pprint
     c = Contactually(ctoken)
-
-    c.create_interaction(initiated_by_contact=True, participants={'12212':'me','14124214':'you'})
