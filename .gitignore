@@ -117,3 +117,4 @@ contact_token.py
 test_request.py
 setup.cfg
 setup.py
+from setuptools import setup.py
