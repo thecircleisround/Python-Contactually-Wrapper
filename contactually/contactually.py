@@ -782,6 +782,106 @@ class Contactually:
 
         return Request(self.token, method, dest, payload=payload)
 
+    def fetch_message_templates(id=None, id_not=None, created_at_before=None, created_at_after=None, created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                                updated_at_none=None, email_categories:list=None, cloned_from_id:list=None, cloned_from_id_not=None, last_used_at_before=None, 
+                                last_used_at_after=None, last_used_at_none=None, usage_count_min=None, usage_count_max=None, cloned_from_id_presence=None,
+                                query_string=None, order=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/message_templates'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def fetch_message_template(self, message_id):
+        dest = f'/message-templates/{message_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def create_message_template(self, name=None, goal=None, subject=None, body=None, include_signature:bool=None, 
+                                attachments:dict=None, email_categories:list=None, cloned_from_id=None):
+        payload = self._payload_fact(locals().items())
+        dest = '/message_templates'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_message_template(self, message_id, name=None, goal=None, subject=None, body=None, include_signature:bool=None, 
+                                attachments:dict=None, email_categories:list=None, cloned_from_id=None):
+        payload = self._payload_fact(locals().items(), exclude=['message_id'])
+        dest = f'messages-templates/{message_id}'
+        method = 'PUT' 
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_message_template(self, message_id):
+        dest = f'/message-templates/{message_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def populate_message_template(self, message_id, contact_id):
+        payload = {'data':{'contact_id':contact_id}}
+        dest = f'/message-templates/{message_id}/populate'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def add_external_ids_to_templates(self, template_mapping):
+        payload = {'data':'template_mapping':template_mapping}
+        dest = '/message-templates/migrate'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def fetch_contact_note(self, contact_id, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                           created_at_none=None, updated_at_before=None, updated_at_after=None, updated_at_none=None,
+                           order=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(),exclude=['contact_id'])
+        dest = f'/contacts/{contact_id}/notes'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def fetch_notes(self, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                    created_at_none=None, updated_at_before=None, updated_at_after=None, updated_at_none=None,
+                    order=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items())
+        dest = '/contacts/notes'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def fetch_note(self, note_id):
+        dest = f'/notes/{note_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def create_note(self, body=None, contact_id=None, timestamp=None):
+        payload = self._payload_fact(locals().items())
+        dest = '/notes'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_note(self, note_id, body=None, contact_id=None, timestamp=None):
+        payload = self._payload_fact(locals.().items(), exclude=['note_id'])
+        dest = f'/notes/{note_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_note(self, note_id): 
+        dest = f'/notes/{note_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+
 
 
 if __name__ == '__main__':
