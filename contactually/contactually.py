@@ -829,7 +829,7 @@ class Contactually:
         return Request(self.token, method, dest, payload=payload)
 
     def add_external_ids_to_templates(self, template_mapping):
-        payload = {'data':'template_mapping':template_mapping}
+        payload = {'data':{'template_mapping':template_mapping}}
         dest = '/message-templates/migrate'
         method = 'POST'
 
@@ -849,8 +849,8 @@ class Contactually:
                     created_at_none=None, updated_at_before=None, updated_at_after=None, updated_at_none=None,
                     order=None, page=None, page_size=None, offset=None):
 
-        params = self._payload_fact(locals().items())
-        dest = '/contacts/notes'
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/notes'
         method = 'GET'
 
         return Request(self.token, method, dest, params=params)
@@ -869,7 +869,7 @@ class Contactually:
         return Request(self.token, method, dest, payload=payload)
 
     def update_note(self, note_id, body=None, contact_id=None, timestamp=None):
-        payload = self._payload_fact(locals.().items(), exclude=['note_id'])
+        payload = self._payload_fact(locals().items(), exclude=['note_id'])
         dest = f'/notes/{note_id}'
         method = 'PUT'
 
@@ -887,4 +887,5 @@ class Contactually:
 if __name__ == '__main__':
     from pprint import pprint
     c = Contactually(ctoken)
+    print(c.fetch_notes().submit())
     
