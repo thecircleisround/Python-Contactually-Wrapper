@@ -835,7 +835,7 @@ class Contactually:
 
         return Request(self.token, method, dest, payload=payload)
 
-    def fetch_contact_note(self, contact_id, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+    def fetch_contact_notes(self, contact_id, id=None, id_not=None, created_at_before=None, created_at_after=None, 
                            created_at_none=None, updated_at_before=None, updated_at_after=None, updated_at_none=None,
                            order=None, page=None, page_size=None, offset=None):
 
@@ -887,5 +887,5 @@ class Contactually:
 if __name__ == '__main__':
     from pprint import pprint
     c = Contactually(ctoken)
-    print(c.fetch_notes().submit())
+
     
