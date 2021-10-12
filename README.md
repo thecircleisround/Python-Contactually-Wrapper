@@ -7,6 +7,6 @@ To begin using import the Contactually class:
 
 <code> from contactually import Contactually </code>
 
-Each method returns a <code>Request</code> that you can inspect and alter before using the <code>Request().submit()</code> method to submit your request to the Contactually server. Return from the <code>Request().submit()</code> method are in JSON. 
+Each method returns a <code>Request</code> that you can inspect and alter before using the <code>Request().submit()</code> method to submit your request to the Contactually server.
 
 Still a work in progress, but will eventually feature an object oriented way to add clients, buckets, and more. Open to contributions and suggestions. More comprehensive README.md to come. 
