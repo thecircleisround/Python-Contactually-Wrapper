@@ -146,7 +146,7 @@ class Contactually:
                        archived_at_none=None, buckets=None, buckets_all=None, buckets_not=None, deals=None, assigned_to=None, assigned_to_not=None,
                        lead_pools=None, email=None, email_not=None, address=None, archived=None, with_archived=None, team_search=None,
                        q_fields=None, custom_field_id=None, custom_field_id_param=None, custom_field_before=None, custom_field_after=None,
-                       custom_field_min=None, custom_field_max=None, query_string=None, notes=None, order=None, page=None, page_size=None, offset=None, fetch_ids=False):
+                       custom_field_min=None, custom_field_max=None, query_string=None, notes=None, order=None, page=None, page_size=None, offset=None, list_ids=False):
 
         params = self._payload_fact(locals().items(), data_dict=False, exclude=[x for x in locals() if 'custom' in x])
 
@@ -160,7 +160,7 @@ class Contactually:
             params[f'{custom_field_str}.min'] = custom_field_min
             params[f'{custom_field_str}.max'] = custom_field_max
 
-        if fetch_ids:
+        if list_ids:
             dest += '/resolve'
 
         elif method == "POST" and not fetch_ids:
@@ -533,6 +533,14 @@ class Contactually:
 
         return Request(self.token, method, dest, params=params)
 
+
+    def fetch_interaction(self, interaction_id):
+        dest = f'/interactions/{interaction_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+
     def fetch_interactions(self, id=None, id_not=None, created_at_before=None, created_at_after=None, created_at_none=None, updated_at_before=None,
                            updated_at_after=None, updated_at_none:bool=None, timestamp_before=None, timestamp_after=None, timestamp_none=None, type:list=None, type_not:list=None,
                            subtype:list=None, subtype_not:list=None, order:list=None, page=None, page_size=None, offset=None):
@@ -545,6 +553,16 @@ class Contactually:
         method = 'GET'
 
         return Request(self.token, method, dest, params=params)
+
+    def fetch_interaction_content(self, interaction_id):
+        dest = f'/interactions/{interaction_id}/content'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def fetch_interaction_participants(self, interaction_id):
+        dest = f'/interactions/{interaction_id}/participants'
+        method = 'Get'
 
     def create_interaction(self, body=None, initiated_by_contact=None, subject=None, timestamp=None, type:str=None, thread_id=None, 
                            ends_at=None, subtype=None, placeholder=None, message_id=None, participants:dict=None):
@@ -579,7 +597,289 @@ class Contactually:
 
         return Request(self.token, method, dest, payload=payload)
 
+    def update_interactions(self, interaction_id, body=None, initiated_by_contact=None, subject=None, timestamp=None, type:str=None, thread_id=None, 
+                           ends_at=None, subtype=None, placeholder=None, message_id=None, participants:dict=None):
+        '''
+        Update an interaction. 
+        Available types: 
+                        calendar_event
+                        email
+                        custom_interaction
+                        facebook
+                        other
+                        in_person
+                        linked_in
+                        mad_mimi
+                        mail_chimp
+                        phone
+                        sms
+                        twitter
+                        zapier
+        Participants parameter should be submitted as dict with contact_id as key and handle as value. 
+        ex: 
+                        {'12345':'friend'}
+        '''
 
+        payload = self._payload_fact(locals().items(), exclude=['interaction_id'])
+        dest = f'/interactions/{interaction_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_interaction(self, interaction_id):
+        dest = f'/interactions/{interaction_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def fetch_merge_suggestions(self, id=None, id_not=None, created_at_before=None, created_at_after=None, created_at_none:bool=None, updated_at_before=None, updated_at_after=None, 
+                                updated_at_none=None, contact_id:list=None, contact_id_not=None, order=None, page=None, page_size=None, offset=None, list_ids=False):
+        '''
+        Get existing merge suggestions (duplicates). 
+        Combines 'Fetch Existing Merge Suggestions' and 'Fetch Contact IDs for the merge suggestion' 
+        '''
+
+        params = self._payload_fact(locals().items(), data_dict=False, exclude=['list_ids'])
+        dest = '/merge-suggestions'
+        method = 'GET'
+
+        if list_contact_ids: 
+            dest += '/resolve'
+
+        return Request(self.token, method, dest, params=params)
+
+    def generate_merge_submissions(self, merge_suggestion_id, accepted_contacts:list=None, rejected_contacts:list=None):
+        merge_id = f'merge_suggestion_{merge_suggestion_id}'
+        contacts_to_merge = {merge_id:{}}
+
+        if accepted_contacts:
+            contacts_to_merge[merge_id]['accepted'] = ['contact_'+x for x in accepted_contacts]
+
+        if rejected_contacts:
+            contacts_to_merge[merge_id]['rejected'] = ['contact_'+x for x in rejected_contacts]
+        return contacts_to_merge
+
+    def process_merge_suggestions(self, contacts_to_process:list):
+        payload = {'data':{'merge_suggestions':{}}}
+        dest = '/merge-suggestions/reviews'
+        method = 'POST'
+
+        for contacts_dict in contacts_to_process:
+            for key, val in contacts_dict.items():
+                payload['data']['merge_suggestions'][key] = val
+        
+        return Request(self.token, method, dest, payload=payload)
+
+    def fetch_messages(self, id=None, id_not=None, created_at_before=None, created_at_after=None, created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                       updated_at_none=None, bulk_message_id:list=None, bulk_message_id_not:list=None, event_type:list=None, event_type_not:list=None, sent_at_before=None,
+                       sent_at_after=None, sent_at_none=None, status=None, status_not=None, enable_open_tracking:bool=None, cnable_click_tracking:bool=None, 
+                       enable_response_tracking:bool=None, require_response:bool=None, sent_in_bulk:bool=None, query_string=None, order=None, page=None, 
+                       page_size=None, offset=None, list_ids=False):
+        params = self._payload_fact(locals().items(), data_dict=False, exclude=['list_ids'])
+        dest = '/messages'
+
+        if list_ids:
+            dest += '/resolve'
+            method = 'POST'
+        else:
+            method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def fetch_message(self, message_id):
+        dest = f'/messages/{message_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def create_message(self, account_id, contact_id=None, subject=None, body=None, message_template_id=None, external_template_id=None, response_tracking_enabled=True, 
+                       open_tracking_enabled=False, click_tracking_enabled=False, response_required_by=None, default_bcc_disabled:bool=None, open_notification_enabled:bool=None,
+                       thread_id=None, in_reply_to=None, references=None, action_plan=None, auto_send=None, object_id=None, recipients:list=None, attachments:list=None):
+
+        payload = self._payload_fact(locals().items(), exclude=['account_id', 'action_plan', 'auto_send', 'object_id'])
+
+        dest = '/messages'
+        method = 'POST'
+
+        if any([action_plan, auto_send, object_id]):
+            payload['metadata'] = {key:val for key, val in locals().items() if key in ['action_plan', 'auto_send', 'object_id'] and val}
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def create_recipient(self, contact_id, contact_identity_id, handle=None, recipient_type=None):
+        ''' 
+        Simple helper function to quickly create recipient dictionary for create_message(). 
+        '''
+
+        recipient = {'contact_id':contact_id, 'contact_identity_id':contact_identity_id}
+
+        if handle:
+            recipient['handle'] = handle
+
+        if recipient_type:
+            recipient['type'] = recipient_type
+
+        return recipient
+
+    def create_attachment(self, filename, url, mimetype=None):
+        '''
+        Simple helper function to quickly create attachment dictionary for create_messaeg(). 
+        '''
+
+        attachment = {'filename':filename, 'url':url}
+
+        if mimetype:
+            attachment['mimetype'] = mimetype
+
+        return attachment
+
+    def delete_messages(self, message_ids:list):
+        payload = {'data':[message_ids]}
+        dest = '/messages'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_message(self, message_id):
+        dest = f'/messages/{message_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def preview_message(self, account_id, contact_id=None, subject=None, body=None, message_template_id=None, external_template_id=None, 
+                        response_tracking_enabled=True, open_tracking_enabled=False, client_tracking_enabled=False, response_required_by=None, default_bcc_disable:bool=None, 
+                        open_notification_enabled:bool=None, thread_id=None, in_reply_to=None, references=None, action_plan=None, auto_send=None, object_id=None, 
+                        recipients:list=None, attachments:list=None, include_signature:bool=None):
+
+        payload = self._payload_fact(locals().items(), exclude=['account_id', 'action_plan', 'auto_send', 'object_id'])
+
+        dest = '/messages/preview'
+        method = 'POST'
+
+        if any([action_plan, auto_send, object_id]):
+            payload['metadata'] = {key:val for key, val in locals().items() if key in ['action_plan', 'auto_send', 'object_id'] and val}
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_message(self, message_id, account_id, contact_id=None, subject=None, body=None, message_template_id=None, external_template_id=None, 
+                        response_tracking_enabled=True, open_tracking_enabled=False, client_tracking_enabled=False, response_required_by=None, default_bcc_disable:bool=None, 
+                        open_notification_enabled:bool=None, thread_id=None, in_reply_to=None, references=None, action_plan=None, auto_send=None, object_id=None, 
+                        recipients:list=None, attachments:list=None, include_signature:bool=None):
+        payload = self._payload_fact(locals().items(), exclude=['account_id', 'action_plan', 'auto_send', 'object_id'])
+
+        dest = f'/messages/{message_id}'
+        method = 'PUT'
+
+        if any([action_plan, auto_send, object_id]):
+            payload['metadata'] = {key:val for key, val in locals().items() if key in ['action_plan', 'auto_send', 'object_id'] and val}
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def deliver_drafted_message(self, message_id, scheduled_at=None):
+        dest = f'/messages/{message_id}/deliver'
+        payload = {'data':{'scheduled_at':scheduled_at}}
+        method = POST
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def fetch_message_templates(id=None, id_not=None, created_at_before=None, created_at_after=None, created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                                updated_at_none=None, email_categories:list=None, cloned_from_id:list=None, cloned_from_id_not=None, last_used_at_before=None, 
+                                last_used_at_after=None, last_used_at_none=None, usage_count_min=None, usage_count_max=None, cloned_from_id_presence=None,
+                                query_string=None, order=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/message_templates'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def fetch_message_template(self, message_id):
+        dest = f'/message-templates/{message_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def create_message_template(self, name=None, goal=None, subject=None, body=None, include_signature:bool=None, 
+                                attachments:dict=None, email_categories:list=None, cloned_from_id=None):
+        payload = self._payload_fact(locals().items())
+        dest = '/message_templates'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_message_template(self, message_id, name=None, goal=None, subject=None, body=None, include_signature:bool=None, 
+                                attachments:dict=None, email_categories:list=None, cloned_from_id=None):
+        payload = self._payload_fact(locals().items(), exclude=['message_id'])
+        dest = f'messages-templates/{message_id}'
+        method = 'PUT' 
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_message_template(self, message_id):
+        dest = f'/message-templates/{message_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def populate_message_template(self, message_id, contact_id):
+        payload = {'data':{'contact_id':contact_id}}
+        dest = f'/message-templates/{message_id}/populate'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def add_external_ids_to_templates(self, template_mapping):
+        payload = {'data':'template_mapping':template_mapping}
+        dest = '/message-templates/migrate'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def fetch_contact_note(self, contact_id, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                           created_at_none=None, updated_at_before=None, updated_at_after=None, updated_at_none=None,
+                           order=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(),exclude=['contact_id'])
+        dest = f'/contacts/{contact_id}/notes'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def fetch_notes(self, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                    created_at_none=None, updated_at_before=None, updated_at_after=None, updated_at_none=None,
+                    order=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items())
+        dest = '/contacts/notes'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def fetch_note(self, note_id):
+        dest = f'/notes/{note_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def create_note(self, body=None, contact_id=None, timestamp=None):
+        payload = self._payload_fact(locals().items())
+        dest = '/notes'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_note(self, note_id, body=None, contact_id=None, timestamp=None):
+        payload = self._payload_fact(locals.().items(), exclude=['note_id'])
+        dest = f'/notes/{note_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_note(self, note_id): 
+        dest = f'/notes/{note_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
 
 
 
@@ -587,3 +887,4 @@ class Contactually:
 if __name__ == '__main__':
     from pprint import pprint
     c = Contactually(ctoken)
+    
