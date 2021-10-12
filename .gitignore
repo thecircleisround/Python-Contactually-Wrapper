@@ -115,3 +115,5 @@ dmypy.json
 contact_token.py
 .DS_Store
 test_request.py
+setup.cfg
+setup.py
