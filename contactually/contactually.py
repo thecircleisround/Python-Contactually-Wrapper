@@ -51,23 +51,36 @@ class Contactually:
                     payload[key] = val
         return payload
 
-    # def _submit_request(func):
-    #     @wraps(func)
-    #     def inner(self, *args, **kwargs):
-    #         r = func(self, *args, **kwargs)
-    #         response = requests.request(r.method,
-    #                                     r.url,
-    #                                     headers=r.headers,
-    #                                     json=r.payload,
-    #                                     params=r.params)
-    #         return response.json()
-    #     return inner
-
-    
     def fetch_current_user(self):
         method = 'GET'
         dest = '/me'
         return Request(self.token, method, dest)
+
+    def update_current_user(self, first_name=None, last_name=None, email=None, avatar_url=None, 
+                            phone_number=None, contactually_goal=None, default_message_account_id=None, 
+                            default_message_subject=None, default_message_bcc=None, onboarding_step=None, 
+                            onboarding_video_seconds=None, show_events_on_dash=None, nps_prompt_due=None, 
+                            dismissed_getting_started=None, organization_id=None, job_title=None, 
+                            website=None, street_1=None, street_2=None, city=None, state=None, 
+                            country=None, zip_code=None, prompted_referral_at=None, contact_columns:list=None, 
+                            partner_user_columns=None, partner_user_aggregation_columns=None, 
+                            partner_rollup_reporting_columns=None, partner_user_health_columns=None,
+                            chrome_plugin_version=None, show_recommendation_onboarding=None, 
+                            dismissed_recommendation_onboarding_at=None, task_email_days_enabled=None, 
+                            task_email_time=None, email_signature=None, time_zone=None, industry_id=None):
+        params = ['first_name','last_name','email','avatar_url','phone_number']
+        settings_params = [key for key in locals().keys() if key not in params and key != 'self']
+        payload = self._payload_fact(locals().items(), exclude=settings_params + ['settings_params','params'])
+        settings = self._payload_fact(locals().items(), exclude=params + ['settings_params', 'params'])
+       
+        if settings: 
+            payload['settings'] = settings
+
+        dest = '/me'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
 
     
     def fetch_buckets(self, id=None, id_not=None, created_at_before=None, created_at_after=None,
@@ -259,7 +272,7 @@ class Contactually:
 
         payload = self._payload_fact(locals().items())
         dest = f'/contacts/{contact_id}'
-        method = 'POST'
+        method = 'PUT'
         
 
         return Request(self.token, method, dest, payload=payload)
@@ -881,11 +894,585 @@ class Contactually:
 
         return Request(self.token, method, dest)
 
+    def fetch_notifications(self, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                            created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                            updated_at_none:bool=None, read_at_before:bool=None, read_at_after:bool=None, read_at_none:bool=None, 
+                            read:bool=None): 
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/notifications'
+        method = 'GET'
 
+        return Request(self.token, method, dest, params=params)
 
+    def mark_as_read(self, notification_id):
+        dest = f'/notifications/{notification_id}'
+        method = 'POST'
 
-if __name__ == '__main__':
-    from pprint import pprint
-    c = Contactually(ctoken)
+        return Request(self.token, method, dest)
 
+    def fetch_partner_team_contacts(self, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                                    created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                                    updated_at_none:bool=None, email:list = None, email_not:list=None, 
+                                    external_id:list=None, external_id_not:list=None, external_id_presence:bool=None,
+                                    tags=None, tags_all=None, tags_not=None, order=None, page=None,
+                                    page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/partners/contacts'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def update_partner_team_contact(self, contact_id, **kwargs):
+        request = self.update_contact(contact_id, **kwargs)
+        request.url = f'{request._host}/partners/{contact_id}'
+        return request
+
+    def fetch_partner_custom_field(self, custom_field_id):
+        dest = '/partners/custom-field'
+        method = 'GET'
+        return Request(self.token, method, dest)
+
+    def fetch_partner_custom_fields(self, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                                    created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                                    updated_at_none:bool=None, type:list=None, type_not:list=None, query_string=None,
+                                    order:list=None, page=None, page_size=None, offset=None):
+        
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/partners/custom-fields'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_partner_custom_fields(self, name=None, type=None, default_value=None, dropdown_options:list=None):
+        payload = self._payload_fact(locals().items())
+        dest = '/partners/custom-fields'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_partner_custom_field(self, custom_field_id):
+        dest = f'/partners/custom-fields/{custom_field_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def fetch_users(self, id=None, id_not=None, created_at_before=None, created_at_after=None, 
+                    created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                    updated_at_none:bool=None, status=None, status_not=None, 
+                    team_id=None, office_tags=None, user_tags=None, categories=None,
+                    query_string=None, order:list=None, page=None, page_size=None, offset=None, list_ids=False):
+
+        params = self._payload_fact(locals().items(), data_dict=False, exclude=['list_ids'])
+        dest = '/partners/users'
+        method = 'GET'
+
+        if list_ids:
+            dest += 'resolve'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_user(self, first_name, last_name, email=None, avatar_url=None, role=None, 
+                    status=None, phone_number=None, external_id=None, team_id=None, office_tag=None, user_tags=None):
+        payload = self._payload_fact(locals().items())
+        dest='/partners/users'
+        method='POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_user(self, user_id, first_name=None, last_name=None, email=None, avatar_url=None, role=None,
+                    status=None, phone_number=None, external_id=None, team_id=None, office_tag=None, user_tags=None,
+                    partner_membership_plan=None):
+
+        payload = self._payload_fact(locals().items(), exclude=['user_id'])
+        dest = f'/partners/users/{user_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def fetch_user_buckets(self, user_id):
+        dest = f'/{user_id}/buckets'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def create_user_bucket(self, user_id, name=None, goal=None, reminder_interval=None, cloned_from_id=None):
+        payload = self._payload_fact(locals().items(), exclude=['user_id'])
+        dest = f'/{user_id}/buckets'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def create_user_contact(self, user_id, upsert=False, **kwargs): 
+        request = self.create_new_contact(self.generate_contact(**kwargs))
+        request.url = f'{request._host}/partners/users/{user_id}/contacts'
+
+        if upsert: 
+            params = {'upsert':upsert}
+            request.params = params
+
+        return request
+
+    def create_user_contact_interaction(self, user_id, contact_id, **kwargs):
+        request = self.create_interaction(contact_id, **kwargs)
+        request.url = f'{request._host}/partners/users/{user_id}/{contact_id}'
+        return request
+
+    def update_user_contact_interaction(self, user_id, contact_id, interaction_id, **kwargs):
+        request = self.update_interactions(interaction_id, **kwargs)
+        request.url = f'{request._host}/partners/users/{user_id}/contacts/{contact_id}/interactions/{interaction_id}'
+        return request
+
+    def create_user_contact_note(self, user_id, contact_id, **kwargs):
+        request = self.create_note(contact_id=contact_id, **kwargs)
+        request.url = f'{request._host}/partners/users/{user_id}/contacts/{contact_id}/notes'
+        return request
+
+    def update_user_contact_note(self, user_id, contact_id, note_id, **kwargs):
+        request = self.update_note(note_id=note_id, contact_id=contact_id, **kwargs)
+        request.url = f'{request._host}/partners/users/{user_id}/contacts/{contact_id}/notes/{note_id}'
+        return request
+
+    def bucket_user_contact(self, user_id, contact_id, bucket_id, update=False, delete=False):
+        payload = {'data':{'id':bucket_id}}
+        dest = f'/partners/users/{user_id}/contacts/{contact_id}/buckets'
+        if update: 
+            method = 'PUT'
+        elif delete:
+            method = 'DELETE'
+        else: 
+            method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_user_contact_bucket(self, **kwargs):
+        return bucket_user_contact(**kwargs, update=True)
+
+    def unbucket_user_contact(self, **kwargs):
+        return bucket_user_contact(**kwargs, delete=True)
+
+    def move_user(self, user_id, team_id):
+        payload = {'data':{'team_id':team_id}}
+        dest = f'/partners/users/{user_id}/team'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def bulk_update_users(self, user_ids:list, field:str, changes:dict):
+        payload = {'data':{'contact_ids':contact_ids,'field':field, 'changes':[{"value":value, "type":change_type} for value,change_type in changes.items()]}}
+        dest = '/partners/users/bulk-change'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def remove_team_from_partner(self, team_id): 
+        dest = '/partners/teams{team_id}/membership'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def change_team_owner(self, team_id, user_id): 
+        payload = {'data':{'user_id':user_id}}
+        dest = f'/teams/{team_id}/owner'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def show_all_pipelines(self, order=None, id=None, id_not=None, created_at_before=None, 
+                           created_at_none=None, updated_at_after=None, updated_at_none=None,
+                           query_string=None, page=None, page_size=None, offset=None):
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/pipelines'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_new_pipeline(self, name, goal=None, stages:list=None, cloned_from_id=None):
+        payload = self._payload_fact(locals().items())
+        dest = '/pipelines'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def show_pipeline(self, pipeline_id):
+        dest = f'/pipelines/{pipeline-id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def update_pipeline(self, pipeline_id, name=None, goal=None, stages:list=None, cloned_from_id=None): 
+        payload = self._payload_fact(locals().items(), exclude=['pipeline_id'])
+        dest = f'/pipelines/{pipeline_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_pipeline(self, pipelind_id): 
+        dest = f'/pipelines/{pipeline_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def fetch_user_prompts(self, id=None, id_not=None, created_at_before=None, created_at_after=None,
+                           created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                           updated_at_none=None, due_at_before=None, due_at_after=None, 
+                           type=None, order=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/me/prompts'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_prompt(self, force:bool):
+        params = {'force':force}
+        dest = '/me/prompts/generate'
+        method = 'POST'
+
+        return Request(self.token, method, dest, params=params)
+
+    def postpone_prompt(self, prompt_id, postpone_until):
+        payload = {'data':{'postpone_until':postpone_until}}
+        dest = f'/me/prompts/{prompt_id}/postpone'
+        method = 'PUT'
+        
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_prompt(self, prompt_id):
+        dest = f'/me/prompts/{prompt_id}'
+        method='DELETE'
+
+        return Request(self.token, method, dest)
+
+    def list_all_reccuring_events(self, id=None, id_not=None, created_at_before=None, created_at_after=None,
+                           created_at_none=None, updated_at_before=None, updated_at_after=None, 
+                           updated_at_none=None, event_type=None, event_type_not=None, next_due_date_before=None, 
+                           next_due_date_after=None, with_archived=None, order:list=None, page=None, 
+                           page_size=None, offset=None): 
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/recurring_events'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def show_contact_recurring_events(self, contact_id, with_team:bool=None, page=None, page_size=None, offset=None):
+        params = self._payload_fact(locals().items(), data_dict=False, exclude=['contact_id'])
+        dest = f'/contacts/{contact_id}/recurring_events'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_event(self, contact_id, event_type, title, due_date, next_due_date=None):
+        event = {'event_type':event_type, 'title':title, 'due_date':due_date,
+                  'contact_id':contact_id}
+        if next_due_date:
+            event['next_due_date'] = next_due_date
+
+        return event
+
+    def create_recurring_event(self, contact_id, events:list):
+        payload = {'data':[event for event in events]}
+        dest = f'/contacts/{contact_id}/recurring_events'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_recurring_event_collection(self, contact_id, events:list):
+        payload = {'data':[event for event in events]}
+        dest = f'/contacts/{contact_id}/recurring_events'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def show_subscription(self):
+        dest = '/team/subscription'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def show_saved_search(self, saved_search_id):
+        dest = f'/saved-searches/{saved_search_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def show_saved_searches(self, order=None, id=None, id_not=None, created_at_before=None, 
+                            created_at_after=None, updated_at_before=None, updated_at_after=None, 
+                            updated_at_none=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/saved-searches'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_new_saved_search(self, user_id, name, search_type):
+        payload = self._payload_fact(locals().items())
+        dest = '/saved-searches'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_saved_search(self, saved_search_id, user_id=None, name=None, search_type=None):
+        payload = self._payload_fact(locals().items())
+        dest = f'/saved-searches/{saved_search_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_saved_search(self, saved_search_id):
+        dest = f'/saved-searches/{saved_search_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def fetch_all_tags(self, id=None, id_not=None, created_at_before=None,created_at_after=None, 
+                       updated_at_before=None, updated_at_after=None, updated_at_none=None, 
+                       query_string=None, page=None, page_size=None, offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/tags'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_new_tag(self, name):
+        payload = {'data':{'name':name}}
+        dest = '/tags'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_tag(self, tag_id, name): 
+        payload = {'data':{'name':name}}
+        dest = f'/tags/{tag_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def delete_tag(self, tag_id): 
+        dest = f'/tags/{tag_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def fetch_task(self, task_id):
+        dest = f'/tasks/{task_id}'
+        method = 'GET'
+
+        return Request(self.token, method, dest)
+
+    def fetch_tasks(self, id=None, id_not=None, created_at_before=None,created_at_after=None, 
+                    updated_at_before=None, updated_at_after=None, updated_at_none=None, 
+                    due_at_before=None, due_at_after=None, due_at_none=None, completed_at_before=None,
+                    completed_at_none=None, completed:bool=None, order=None, page=None, page_size=None,
+                    offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False)
+        dest = '/me/tasks/'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def list_contact_tasks(self, contact_id, id=None, id_not=None, created_at_before=None,created_at_after=None, 
+                    updated_at_before=None, updated_at_after=None, updated_at_none=None, 
+                    due_at_before=None, due_at_after=None, due_at_none=None, completed_at_before=None,
+                    completed_at_none=None, completed:bool=None, order=None, page=None, page_size=None,
+                    offset=None):
+
+        params = self._payload_fact(locals().items(), data_dict=False, exclude=['contact_id'])
+        dest = f'/contacts/{contact_id}/tasks'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+
+    def create_task(self, contact_id, due_at, title, assigned_to_id=None, external_description=None):
+        payload = self._payload_fact(locals().items())
+        dest = '/tasks'
+        method = 'POST'
+
+        return Request(self.token, method, dest, payload=payload)
+
+    def update_task(self, task_id, contact_id, due_at, title, assigned_to_id=None, external_description=None):
+        payload = self.payload_fact(locals().items(), exclude=['task_id'])
+        dest = f'/tasks/{task_id}'
+        method = 'PUT'
+
+        return Request(self.token, method, dest, payload=payload)
+        
+    def delete_task(self, task_id):
+        dest = f'/tasks/{task_id}'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def complete_task(self, task_id):
+        dest = f'/tasks/{task_id}/complete'
+        method = 'POST'
+
+        return Request(self.token, method, dest)
+
+    def restart_task(self, task_id):
+        dest = f'/tasks/{task_id}/complete'
+        method = 'DELETE'
+
+        return Request(self.token, method, dest)
+
+    def fetch_users_stats(self, id=None, id_not=None, created_at_before=None,created_at_after=None, 
+                    updated_at_before=None, updated_at_after=None, updated_at_none=None, user_id=None, 
+                    user_id_not=None, account_created_count_min=None, account_created_count_max=None, 
+                    attempted_to_connect_account_count_min=None, attempted_to_connect_account_count_max=None,
+                    session_created_count_max=None, contact_created_count_min=None, contact_created_count_max=None, 
+                    contact_updated_count_min=None, contact_updated_count_max=None, 
+                    contact_merged_count_min=None, contact_merged_count_max=None, 
+                    contact_bucketed_count_min=None, contact_bucketed_count_max=None, 
+                    contact_tagged_count_min=None, contact_tagged_count_max=None,
+                    contact_muted_count_min=None, contact_muted_count_max=None, 
+                    contact_archived_count_min=None, contact_archived_count_max=None, 
+                    contact_unarchived_count_min=None, contact_unarchived_count_max=None, 
+                    messaged_created_count_min=None, messaged_created_count_max=None, 
+                    bulk_message_created_count_min=None, bulk_messaged_created_count_max=None, 
+                    recipients_from_bulk_messages_count_min=None, recipients_from_bulk_messages_count_max=None,
+                    messages_sent_in_bulk_min=None, messages_sent_in_bulk_max=None, 
+                    messages_sent_via_program_min=None, messages_sent_via_program_max=None,
+                    messages_sent_individually_min=None, messages_sent_individually_max=None, 
+                    opened_messages_min=None, opened_messages_max=None, 
+                    clicked_messages_min=None, clicked_messages_max=None, 
+                    replied_messages_min=None, replied_messages_max=None, 
+                    bucket_created_count_min=None, bucket_created_count_max=None, 
+                    program_completed_count_min=None, program_completed_count_max=None, 
+                    calendar_event_contact_history_created_count_min=None, 
+                    calendar_event_contact_history_created_count_max=None, 
+                    email_contact_history_created_count_min=None, 
+                    email_contact_history_created_count_max=None, 
+                    facebook_contact_history_created_count_min=None, 
+                    facebook_contact_history_created_count_max=None, 
+                    generic_contact_history_created_count_min=None, 
+                    generic_contact_history_created_count_max=None, 
+                    in_person_meeting_contact_history_created_count_min=None, 
+                    in_person_meeting_contact_history_created_count_max=None, 
+                    linked_in_contact_history_created_count_min=None, 
+                    linked_in_contact_history_created_count_max=None, 
+                    madmimi_contact_history_created_count_min=None, 
+                    madmimi_contact_history_created_count_max=None, 
+                    mail_chimp_contact_history_created_count_min=None, 
+                    mail_chimp_contact_history_created_count_max=None, 
+                    manual_contact_history_created_count_min=None, 
+                    manual_contact_history_created_count_max=None, 
+                    phone_call_contact_history_created_count_min=None, 
+                    phone_call_contact_history_created_count_max=None, 
+                    physical_message_contact_history_created_count_min=None, 
+                    physical_message_contact_history_created_count_max=None, 
+                    sms_contact_history_created_count_min=None, 
+                    sms_contact_history_created_count_max=None, 
+                    twitter_contact_history_created_count_max=None, 
+                    zapier_contact_history_created_count_min=None, 
+                    zapier_contact_history_created_count_max=None, 
+                    task_created_count_min=None, 
+                    task_created_count_max=None, 
+                    task_snoozed_count_min=None, 
+                    task_snoozed_count_max=None, 
+                    task_ignored_count_min=None, 
+                    task_ignored_count_max=None, 
+                    followup_task_completed_count_min=None, 
+                    followup_task_completed_count_max=None, 
+                    content_sharing_task_completed_count_min=None, 
+                    content_sharing_task_completed_count_max=None, 
+                    introduction_task_completed_count_min=None, 
+                    introduction_task_completed_count_max=None, 
+                    approval_task_completed_count_min=None, 
+                    approval_task_completed_count_max=None, 
+                    unresponded_message_task_completed_count_min=None,
+                    unresponded_message_task_completed_count_max=None, 
+                    recurring_event_task_completed_count_min=None, 
+                    recurring_event_task_completed_count_max=None, 
+                    merge_suggestion_created_count_min=None, 
+                    merge_suggestion_created_count_max=None, 
+                    merge_suggestion_reviewed_count_min=None, 
+                    merge_suggestion_reviewed_count_max=None, 
+                    email_template_created_count_min=None, 
+                    email_template_created_count_max=None, 
+                    email_template_populated_count_min=None, 
+                    email_templated_populated_count_max=None, 
+                    csv_import_created_count_max=None, 
+                    csv_import_created_count_min=None, 
+                    csv_import_processed_count_min=None, 
+                    csv_import_processed_count_max=None, 
+                    csv_export_processed_count_min=None, 
+                    csv_export_processed_count_max=None, 
+                    deal_created_count_min=None, 
+                    deal_created_count_max=None, 
+                    deal_updated_count_min=None, 
+                    deal_updated_count_max=None, 
+                    deal_destroyed_count_min=None,
+                    deal_destroyed_count_max=None, 
+                    deal_won_count_min=None, 
+                    deal_won_count_max=None, 
+                    deal_lost_count_min=None, 
+                    deal_lost_count_max=None, 
+                    deal_moved_count_min=None, 
+                    deal_moved_count_max=None, 
+                    tag_created_count_min=None, 
+                    tag_created_count_max=None, 
+                    tag_created_updated_count_min=None, 
+                    tag_created_updated_count_max=None, 
+                    tag_updated_count_min=None, 
+                    tag_updated_count_max=None, 
+                    tag_destroyed_count_min=None, 
+                    tag_destroyed_count_max=None, 
+                    library_content_created_count_min=None, 
+                    library_content_created_count_max=None, 
+                    library_content_updated_count_min=None, 
+                    library_content_updated_count_max=None, 
+                    library_content_destroyed_count_min=None, 
+                    library_content_destroyed_count_max=None, 
+                    note_created_count_min=None, 
+                    note_created_count_max=None, 
+                    document_created_count_min=None, 
+                    document_created_count_max=None, 
+                    document_updated_count_min=None, 
+                    document_updated_count_max=None, 
+                    document_destroyed_count_min=None, 
+                    document_destroyed_count_max=None, 
+                    lead_created_count_min=None, 
+                    lead_created_count_max=None, 
+                    lead_updated_count_min=None, 
+                    lead_updated_count_max=None, 
+                    lead_destroyed_count_min=None, 
+                    lead_destroyed_count_max=None, 
+                    contact_link_created_count_min=None, 
+                    contact_link_created_count_max=None, 
+                    contact_link_updated_count_min=None, 
+                    contact_link_updated_count_max=None, 
+                    contact_link_destroyed_count_min=None, 
+                    contact_link_destroyed_count_max=None, 
+                    total_seconds_in_app_min=None, 
+                    total_seconds_in_app_max=None, 
+                    total_seconds_on_web_min=None, 
+                    total_seconds_on_web_max=None, 
+                    total_seconds_on_mobile_min=None, 
+                    total_seconds_on_mobile_max=None, 
+                    total_sessions_min=None, 
+                    total_sessions_max=None, 
+                    total_web_sessions_min=None, 
+                    total_web_sessions_max=None, 
+                    total_mobile_sessions_min=None, 
+                    total_mobile_sessions_max=None, 
+                    total_task_completed_count_min=None, 
+                    total_task_completed_count_max=None, 
+                    appointment_count_min=None, 
+                    appointment_count_max=None, 
+                    query_string=None, order=None, 
+                    page=None, page_size=None,
+                    offset=None
+                    ):
+        params = self._payload_fact(locals().items(), data_dict=None)
+        dest = '/partners/users/stats'
+        method = 'GET'
+
+        return Request(self.token, method, dest, params=params)
+    
+c = Contactually(ctoken)
+c.update_current_user(first_name="bob", contactually_goal="222")
     
