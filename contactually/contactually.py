@@ -1,5 +1,3 @@
-from functools import wraps
-from contact_token import TOKEN as ctoken
 import requests
 
 ''' Python wrapper for Contactually API v2. Refer to Readme.md for examples'''
