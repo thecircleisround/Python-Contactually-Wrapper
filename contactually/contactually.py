@@ -1470,7 +1470,3 @@ class Contactually:
         method = 'GET'
 
         return Request(self.token, method, dest, params=params)
-    
-c = Contactually(ctoken)
-c.update_current_user(first_name="bob", contactually_goal="222")
-    
