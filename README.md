@@ -1,6 +1,10 @@
 # Python Contactually Wrapper
  Feature complete wrapper module for the Contactually API v2. 
  
+ Clone repository or install with 
+ 
+ <code> pip install py-contactually </code>
+ 
 Use the Contactually API documentation (https://developers.contactually.com/reference) as a reference for available endpoints and the data associated with each. With a few exceptions, module methods are aligned with the requests as listed on the reference page.
 
 To begin using import the Contactually class: 
