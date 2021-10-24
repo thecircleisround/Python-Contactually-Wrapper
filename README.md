@@ -1,5 +1,5 @@
 # Python Contactually Wrapper
- Feature complete wrapper module for the Contactually API v2. 
+ Feature complete Python wrapper module for the Contactually API v2. 
  
  Clone repository or install with 
  
