@@ -136,10 +136,9 @@ class Contactually:
                                   bucketed_at_after=None, bucketed_at_none=None, query_string=None, order=None, page=None, page_size=None, offset=None):
 
 
-        params = self._payload_fact(locals().items(),data_dict=False,exclude=['bucket_id'])
+        params = self._payload_fact(locals().items(), data_dict=False, exclude=['bucket_id'])
         method = 'GET'
         dest = f'/buckets/{bucket_id}/contacts'
-        print(dest)
         return Request(self.token, method, dest, params=params)
 
     
@@ -277,7 +276,7 @@ class Contactually:
 
     
     def update_multiple_contacts(self, contact_ids,field, changes:dict):
-        payload = {'data':{'contact_ids':contact_ids,'field':field, 'changes':[{"value":value, "type":change_type} for value,change_type in changes.items()] }}
+        payload = {'data':{'contact_ids':contact_ids,'field':field, 'changes':[{'value':value, 'type':change_type} for value,change_type in changes.items()]}}
         dest = '/contacts/bulk-change'
         method = 'POST'
 
