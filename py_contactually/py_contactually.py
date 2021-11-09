@@ -276,7 +276,7 @@ class Contactually:
 
     
     def update_multiple_contacts(self, contact_ids,field, changes:dict):
-        payload = {'data':{'contact_ids':contact_ids,'field':field, 'changes':[{'value':value, 'type':change_type} for value,change_type in changes.items()]}}
+        payload = {'data':{'contact_ids':contact_ids,'field':field, 'changes':[{"value":value, "type":change_type} for value,change_type in changes.items()] }}
         dest = '/contacts/bulk-change'
         method = 'POST'
 

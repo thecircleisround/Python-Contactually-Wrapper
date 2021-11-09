@@ -116,6 +116,6 @@ contact_token.py
 .DS_Store
 test_request.py
 setup.cfg
+
 setup.py
-from setuptools import setup.py
-py_contactually/models.py
+
