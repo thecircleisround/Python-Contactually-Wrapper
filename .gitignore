@@ -119,3 +119,6 @@ setup.cfg
 
 setup.py
 
+py-contactually.sublime-project
+py-contactually.sublime-workspace
+py_contactually/models.sublime-workspace

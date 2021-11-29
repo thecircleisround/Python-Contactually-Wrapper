@@ -142,7 +142,7 @@ class Contactually:
         return Request(self.token, method, dest, params=params)
 
     
-    def fetch_contacts(self, method='GET', id=None, id_not=None, created_at_before=None, created_at_after=None, create_at_none=None,
+    def fetch_contacts(self, method='GET', id=None, id_not=None, created_at_before=None, created_at_after=None, created_at_none=None,
                        updated_at_before=None, updated_at_after=None, updated_at_none=None, audiences=None, audiences_all=None,
                        audiences_not=None, company=None, location=None, connected_to=None, tags=None, tags_all=None, tags_not=None,
                        connected_accounts=None, external_id=None, external_id_not=None, external_id_presence=None, last_bucketed_at_before=None,
